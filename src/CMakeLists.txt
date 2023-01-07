@@ -8,13 +8,11 @@ message("target: ${PROJECT_NAME} source files: ${SOURCE_FILES}")
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pch.hpp)
 target_compile_definitions(${PROJECT_NAME} PRIVATE -D_CRT_SECURE_NO_WARNINGS -DNOMINMAX)
-target_link_libraries(${PROJECT_NAME} PRIVATE wxcore wxbase) # CONAN_PKG::boost
+target_link_libraries(${PROJECT_NAME} PRIVATE wx::core wx::base)
 set_target_properties(${PROJECT_NAME} PROPERTIES
   CXX_STANDARD 20
   CXX_STANDARD_REQUIRED ON
   CXX_EXTENSIONS OFF
   LINKER_LANGUAGE CXX
 )
-target_link_options(${PROJECT_NAME} PRIVATE 
-  /MANIFESTINPUT:${CMAKE_CURRENT_SOURCE_DIR}/../deps/wxWidgets/include/wx/msw/wx_dpi_aware_pmv2.manifest
-)
+target_link_options(${PROJECT_NAME} PRIVATE "LINKER:/MANIFEST:NO")

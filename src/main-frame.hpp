@@ -1,8 +1,13 @@
 #pragma once
 #include "pch.hpp"
+#include "folder-input.hpp"
 
 class MainFrame : public wxFrame
 {
+  FolderInput* mkvPanel;
+  FolderInput* subsPanel;
+  FolderInput* audioPanel;
+
 public:
   MainFrame();
 

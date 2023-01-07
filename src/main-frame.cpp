@@ -1,180 +1,5 @@
 #include "main-frame.hpp"
-
-
-struct IDropHandler
-{
-  virtual ~IDropHandler() = default;
-
-  virtual void   handleDirectory( const fs::path& ) = 0;
-  virtual void   handleFile( const fs::path& )      = 0;
-  virtual wxRect getBounds() const                  = 0;
-  virtual void   resetDrop()                        = 0;
-};
-
-
-class DropBox : public wxFileDropTarget
-{
-  const char*                name_;
-  std::vector<IDropHandler*> sizers_;
-
-public:
-  DropBox( std::vector<IDropHandler*> sizers )
-      : sizers_{ sizers }
-  {}
-
-  bool OnDropFiles( wxCoord x, wxCoord y, const wxArrayString& filenames ) override
-  {
-    for( auto* sizer: sizers_ )
-    {
-      if( !sizer->getBounds().Contains( x, y ) )
-        continue;
-
-      sizer->resetDrop();
-
-      for( const auto& filename: filenames )
-        handleDrop( sizer, filename );
-    }
-
-    return false;
-  }
-
-private:
-  void handleDrop( IDropHandler* handler, const wxString& string )
-  {
-    auto path = fs::path{ string.fn_str() };
-
-    auto ec     = std::error_code{};
-    auto status = fs::status( path, ec );
-    if( ec )
-    {
-      wxLogError( "error getting file status: %s", ec.message().c_str() );
-      return;
-    }
-
-    if( status.type() == fs::file_type::directory )
-      handler->handleDirectory( path );
-    else if( status.type() == fs::file_type::regular )
-      handler->handleFile( path );
-    else
-      wxLogError( "unknown file status: %d", ( int ) status.type() );
-  }
-};
-
-
-enum class FolderInputFlags
-{
-  None,
-  AskExtension,
-};
-
-
-class FolderInput : public wxBoxSizer, public IDropHandler
-{
-  wxString    extension_;
-  wxTextCtrl* extensionInput_ = nullptr;
-
-  fs::path    baseDirectory_;
-  wxTextCtrl* baseDirectoryInput_ = nullptr;
-
-  std::vector<fs::path> allFiles_;
-  wxListBox*            allFilesList_ = nullptr;
-
-public:
-  FolderInput( wxWindow* parent, const wxString& title, const wxString& extension,
-               FolderInputFlags flags = FolderInputFlags::None )
-      : wxBoxSizer{ wxVERTICAL }
-      , extension_{ extension }
-  {
-    auto* text          = new wxStaticText{ parent, wxID_ANY, title };
-    baseDirectoryInput_ = new wxTextCtrl{ parent, wxID_ANY };
-    this->Add( text, 0, wxEXPAND | wxLEFT | wxRIGHT, 5 );
-    this->Add( baseDirectoryInput_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 5 );
-
-    if( !!( flags & FolderInputFlags::AskExtension ) )
-    {
-      auto* extText   = new wxStaticText{ parent, wxID_ANY, wxT( "extension:" ) };
-      extensionInput_ = new wxTextCtrl{ parent, wxID_ANY, extension };
-      this->Add( extText, 0, wxEXPAND | wxLEFT | wxRIGHT, 5 );
-      this->Add( extensionInput_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 5 );
-    }
-
-    auto* listText = new wxStaticText{ parent, wxID_ANY, wxT( "files:" ) };
-    allFilesList_  = new wxListBox{ parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr,
-                                   wxLB_HSCROLL };
-    this->Add( listText, 0, wxEXPAND | wxLEFT | wxRIGHT, 5 );
-    this->Add( allFilesList_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 5 );
-  }
-
-  void handleFile( const fs::path& path ) override
-  {
-    wxLogInfo( "file input: %s", path.string().c_str() );
-    baseDirectory_ = path.parent_path();
-    allFiles_.push_back( path );
-    updateControl();
-  }
-
-  void handleDirectory( const fs::path& path ) override
-  {
-    wxLogInfo( "directory input: %s", path.string().c_str() );
-    baseDirectory_ = path;
-
-    auto ec       = std::error_code{};
-    auto iterator = fs::directory_iterator{ path, ec };
-
-    if( ec )
-    {
-      wxLogError( "can't get directory status: %s", ec.message().c_str() );
-      return;
-    }
-
-    for( const auto& entry: iterator )
-    {
-      bool isRegularFile = entry.is_regular_file( ec );
-
-      if( ec )
-      {
-        wxLogError( "can't get file status: %s", ec.message().c_str() );
-        continue;
-      }
-
-      if( !isRegularFile )
-        continue;
-
-      allFiles_.push_back( entry.path() );
-    }
-
-    updateControl();
-  }
-
-  void resetDrop() override
-  {
-    wxLogInfo( "resetting drop" );
-    baseDirectory_ = fs::path{};
-    allFiles_.clear();
-  }
-
-  wxRect getBounds() const override { return { GetPosition(), GetSize() }; }
-
-private:
-  void updateControl()
-  {
-    baseDirectoryInput_->ChangeValue( baseDirectory_.string().c_str() );
-    allFilesList_->Clear();
-
-    if( !allFiles_.empty() )
-    {
-      auto stringArr = wxArrayString{};
-      stringArr.Alloc( allFiles_.size() );
-      for( const auto& path: allFiles_ )
-      {
-        stringArr.Add( path.string().c_str() );
-      }
-
-      allFilesList_->InsertItems( stringArr, 0 );
-    }
-  }
-};
-
+#include "process-mkv.hpp"
 
 MainFrame::MainFrame()
     : wxFrame{ nullptr, wxID_ANY, "merge mkv" }
@@ -202,10 +27,6 @@ MainFrame::MainFrame()
     CreateStatusBar();
     SetStatusText( "Welcome to wxWidgets!" );
   }
-
-  FolderInput* mkvPanel;
-  FolderInput* subsPanel;
-  FolderInput* audioPanel;
 
   // LAYOUT
   {
@@ -268,4 +89,14 @@ void MainFrame::OnHello( wxCommandEvent& event )
 void MainFrame::OnProcess( wxCommandEvent& event )
 {
   wxLogInfo( "OnProcess();" );
+
+  auto tasks = makeMkvCombineTasks( ProcessMkvInput{
+      .mkvsDirectory = mkvPanel->getBaseDirectory(),
+      .mkvs          = std::move( mkvPanel->getFilteredFileList() ),
+      .subs          = std::move( subsPanel->getFilteredFileList() ),
+      .audios        = std::move( audioPanel->getFilteredFileList() ),
+  } );
+
+  if( !tasks )
+    return;
 }

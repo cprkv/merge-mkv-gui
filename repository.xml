@@ -1,0 +1,3 @@
+<repository>
+  <dependency name="wxWidgets" url="git@github.com:cprkv/wxWidgets.git"/>
+</repository>

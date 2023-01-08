@@ -18,7 +18,7 @@ class UpdateInProgress
   InternalUpdate& internalUpdate_;
 
 public:
-  UpdateInProgress( InternalUpdate& internalUpdate )
+  explicit UpdateInProgress( InternalUpdate& internalUpdate )
       : internalUpdate_{ internalUpdate }
   {
     internalUpdate_.onUpdate();
@@ -29,3 +29,5 @@ public:
     internalUpdate_.onUpdateFinished();
   }
 };
+
+

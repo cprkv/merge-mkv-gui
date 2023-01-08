@@ -1,3 +1,4 @@
 <repository>
   <dependency name="wxWidgets" url="git@github.com:cprkv/wxWidgets.git"/>
+  <dependency name="subprocess" url="https://github.com/sheredom/subprocess.h.git"/>
 </repository>

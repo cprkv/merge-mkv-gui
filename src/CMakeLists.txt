@@ -8,7 +8,7 @@ message("target: ${PROJECT_NAME} source files: ${SOURCE_FILES}")
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pch.hpp)
 target_compile_definitions(${PROJECT_NAME} PRIVATE -D_CRT_SECURE_NO_WARNINGS -DNOMINMAX)
-target_link_libraries(${PROJECT_NAME} PRIVATE wx::core wx::base)
+target_link_libraries(${PROJECT_NAME} PRIVATE wx::core wx::base subprocess)
 set_target_properties(${PROJECT_NAME} PROPERTIES
   CXX_STANDARD 20
   CXX_STANDARD_REQUIRED ON

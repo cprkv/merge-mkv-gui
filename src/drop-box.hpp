@@ -13,14 +13,10 @@ struct IDropHandler
 
 class DropBox : public wxFileDropTarget
 {
-  const char*                name_;
-  std::vector<IDropHandler*> sizers_;
+  std::vector<IDropHandler*> dropHandlers_;
 
 public:
-  DropBox( std::vector<IDropHandler*> sizers );
+  explicit DropBox( std::vector<IDropHandler*> dropHandlers );
 
-  bool OnDropFiles( wxCoord x, wxCoord y, const wxArrayString& filenames );
-
-private:
-  void handleDrop( IDropHandler* handler, const wxString& string );
+  bool OnDropFiles( wxCoord x, wxCoord y, const wxArrayString& filenames ) override;
 };

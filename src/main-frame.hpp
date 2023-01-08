@@ -1,12 +1,16 @@
 #pragma once
 #include "pch.hpp"
 #include "folder-input.hpp"
+#include "internal-update.hpp"
+
 
 class MainFrame : public wxFrame
 {
-  FolderInput* mkvPanel;
-  FolderInput* subsPanel;
-  FolderInput* audioPanel;
+  FolderInput*   mkvFolderInput;
+  FolderInput*   subsFolderInput;
+  FolderInput*   audioFolderInput;
+  wxButton*      processButton_;
+  InternalUpdate processUpdate_;
 
 public:
   MainFrame();

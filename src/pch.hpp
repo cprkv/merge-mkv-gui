@@ -42,6 +42,9 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include <barrier>
+#include <latch>
+#include <atomic>
 
 namespace fs = std::filesystem;
 

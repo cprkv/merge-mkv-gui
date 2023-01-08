@@ -8,6 +8,7 @@
 #include <wx/log.h>
 #include <wx/file.h>
 #include <wx/dnd.h>
+#include <wx/aboutdlg.h>
 #include <wx/dynarray.h>
 
 #include <iostream>

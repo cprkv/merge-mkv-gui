@@ -20,6 +20,9 @@ namespace
       button_->Enable( true );
     }
   };
+
+  wxDEFINE_EVENT( wxEVT_MKV_PROCESS_STATUS_UPDATE, wxThreadEvent );
+
 } // namespace
 
 
@@ -29,9 +32,6 @@ MainFrame::MainFrame()
   // MENU
   {
     auto* menuFile = new wxMenu{};
-    menuFile->Append( ID_Hello, "&Hello...\tCtrl-H",
-                      "Help string shown in status bar for this menu item" );
-    menuFile->AppendSeparator();
     menuFile->Append( wxID_EXIT );
 
     auto* menuHelp = new wxMenu{};
@@ -42,7 +42,6 @@ MainFrame::MainFrame()
     menuBar->Append( menuHelp, "&Help" );
     SetMenuBar( menuBar );
 
-    Bind( wxEVT_MENU, &MainFrame::OnHello, this, ID_Hello );
     Bind( wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT );
     Bind( wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT );
   }
@@ -50,7 +49,7 @@ MainFrame::MainFrame()
   // STATUS BAR
   {
     CreateStatusBar();
-    SetStatusText( "Welcome to wxWidgets!" );
+    SetStatusText( "..." );
   }
 
   // LAYOUT
@@ -81,6 +80,8 @@ MainFrame::MainFrame()
     SetBackgroundColour( wxColour{ "#ffffff" } );
   }
 
+  Connect( wxEVT_MKV_PROCESS_STATUS_UPDATE, wxThreadEventHandler( MainFrame::OnProcessStatusUpdate ) );
+
   wxLogInfo( "main frame created" );
 }
 
@@ -94,24 +95,23 @@ void MainFrame::OnExit( wxCommandEvent& )
 
 void MainFrame::OnAbout( wxCommandEvent& )
 {
-  wxMessageBox( "This is a wxWidgets Hello World example",
-                "About Hello World", wxOK | wxICON_INFORMATION );
-}
-
-
-void MainFrame::OnHello( wxCommandEvent& )
-{
-  wxLogInfo( "Hello world from wxWidgets!" );
+  auto aboutInfo = wxAboutDialogInfo{};
+  aboutInfo.SetName( "merge-mkv-gui" );
+  aboutInfo.SetVersion( "1.0.0" );
+  aboutInfo.SetDescription( _( "Simple app to merge shitty mkv files with subtitles and audio tracks" ) );
+  aboutInfo.SetCopyright( "Chuprakov Vadim (C) 2023" );
+  aboutInfo.SetWebSite( "https://vy.ru.net" );
+  aboutInfo.AddDeveloper( "Vadim Chuprakov" );
+  wxAboutBox( aboutInfo );
 }
 
 
 void MainFrame::OnProcess( wxCommandEvent& )
 {
-  if( processUpdate_.isUpdateInProgress() )
+  if( updateInProgress_ )
     return;
-
-  auto buttonDisabler = ButtonDisableScope{ processButton_ };
-  auto processLock    = UpdateInProgress{ processUpdate_ };
+  updateInProgress_ = true;
+  processButton_->Disable();
 
   auto tasks = makeMkvCombineTasks( ProcessMkvInput{
       .mkvsDirectory = mkvFolderInput->getBaseDirectory(),
@@ -121,16 +121,41 @@ void MainFrame::OnProcess( wxCommandEvent& )
   } );
 
   if( !tasks )
+  {
+    updateInProgress_ = false;
+    processButton_->Enable( true );
     return;
+  }
 
   // TODO: make this persistent setting in app
-  auto mkvToolnixPath = fs::path{ "C:\\Program Files\\MKVToolNix" };
+  auto  mkvToolnixPath = fs::path{ "C:\\Program Files\\MKVToolNix" };
+  auto* instance       = this;
 
-  runMkvCombine( mkvToolnixPath, *tasks, [this]( uint32_t taskRemaining, uint32_t taskCount ) {
-    auto tasksDone = taskCount - taskRemaining;
-    SetStatusText( wxString::Format( "processing... %u/%u", tasksDone, taskCount ) );
-    wxWindow::Update();
-  } );
+  auto action = [instance, mkvToolnixPath, tasks]() {
+    runMkvCombine( mkvToolnixPath, *tasks, [instance]( uint32_t taskRemaining, uint32_t taskCount ) {
+      auto  tasksDone = taskCount - taskRemaining;
+      auto  status    = wxString::Format( "processing... %u/%u", tasksDone, taskCount );
+      auto* evt       = new wxThreadEvent{ wxEVT_MKV_PROCESS_STATUS_UPDATE };
+      evt->SetString( status );
+      wxQueueEvent( instance, evt );
+    } );
 
-  SetStatusText( "processing done!" );
+    auto* evt = new wxThreadEvent{ wxEVT_MKV_PROCESS_STATUS_UPDATE };
+    evt->SetString( "processing done!" );
+    wxQueueEvent( instance, evt );
+  };
+
+  std::thread{ std::move( action ) }.detach();
+}
+
+
+void MainFrame::OnProcessStatusUpdate( wxThreadEvent& event )
+{
+  SetStatusText( event.GetString() );
+
+  if( event.GetString() == "processing done!" )
+  {
+    updateInProgress_ = false;
+    processButton_->Enable( true );
+  }
 }

@@ -40,7 +40,7 @@ public:
     if( !threads_.empty() )
       return;
 
-    uint32_t numThreads = std::thread::hardware_concurrency();
+    uint32_t numThreads = std::max( std::thread::hardware_concurrency(), 8u );
     threads_.reserve( numThreads );
 
     for( uint32_t i = 0; i < numThreads; ++i )

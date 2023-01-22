@@ -1,4 +1,5 @@
 #include "folder-input.hpp"
+#include "string-utils.hpp"
 
 FolderInput::FolderInput( wxWindow* parent, const wxString& title, fs::path extension, FolderInputFlags flags )
     : wxBoxSizer{ wxVERTICAL }
@@ -41,7 +42,7 @@ std::vector<fs::path> FolderInput::getFilteredFileList() const
 
 void FolderInput::handleFile( const fs::path& path )
 {
-  wxLogInfo( "file input: %s", path.string().c_str() );
+  wxLogInfo( "file input: %s", toWxString( path ) );
   baseDirectory_ = path.parent_path();
   allFiles_.push_back( path );
   updateControl();
@@ -49,7 +50,7 @@ void FolderInput::handleFile( const fs::path& path )
 
 void FolderInput::handleDirectory( const fs::path& path )
 {
-  wxLogInfo( "directory input: %s", path.string().c_str() );
+  wxLogInfo( "directory input: %s", toWxString( path ) );
   baseDirectory_ = path;
 
   auto ec       = std::error_code{};
@@ -74,7 +75,7 @@ void FolderInput::handleDirectory( const fs::path& path )
     if( !isRegularFile )
       continue;
 
-    wxLogInfo( "file from directory: %s", entry.path().string().c_str() );
+    wxLogInfo( "file from directory: %s", toWxString( entry.path() ) );
     allFiles_.push_back( entry.path() );
   }
 
@@ -108,10 +109,10 @@ void FolderInput::onDirectoryUpdate( wxCommandEvent& event )
 
 void FolderInput::updateControl()
 {
-  wxLogInfo( "updateControl, ext: %s", extension_.string().c_str() );
+  wxLogInfo( "updateControl, ext: %s", toWxString( extension_ ) );
 
   auto updateLock = UpdateInProgress{ internalUpdate_ };
-  baseDirectoryInput_->ChangeValue( baseDirectory_.string().c_str() );
+  baseDirectoryInput_->ChangeValue( toWxString( baseDirectory_ ) );
   allFilesList_->Clear();
 
   auto stringArr = wxArrayString{};
@@ -119,7 +120,7 @@ void FolderInput::updateControl()
 
   for( const auto& path: allFiles_ )
     if( extension_.empty() || path.extension() == extension_ )
-      stringArr.Add( path.filename().string().c_str() );
+      stringArr.Add( toWxString( path.filename() ) );
 
   wxLogInfo( "allFilesList should be updated to have %d items", ( int ) stringArr.size() );
 

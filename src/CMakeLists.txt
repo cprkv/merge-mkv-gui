@@ -1,7 +1,7 @@
 project(merge-mkv-gui)
 add_executable(${PROJECT_NAME} WIN32)
 
-file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.hpp *.inl *.rc)
+file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.hpp *.inl *.rc *.manifest)
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES})
 message("target: ${PROJECT_NAME} source files: ${SOURCE_FILES}")
 

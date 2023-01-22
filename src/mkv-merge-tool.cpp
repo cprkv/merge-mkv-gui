@@ -1,4 +1,5 @@
 #include "mkv-merge-tool.hpp"
+#include "string-utils.hpp"
 #include <subprocess.h>
 
 namespace
@@ -40,15 +41,17 @@ MkvMergeResult runMkvMergeTool( const RunMkvMergeOptions& options )
   auto arguments = std::vector<std::string>{
       mkvMergePath.string(),
       "-o",
-      options.outputPath.string(),
-      options.mkvPath.string(),
+      ( const char* ) toWxString( options.outputPath ),
+      ( const char* ) toWxString( options.mkvPath ),
   };
 
   if( options.subtitlePath )
-    arguments.emplace_back( options.subtitlePath->string() );
+  {
+    arguments.emplace_back( toWxString( *options.subtitlePath ) );
+  }
 
   if( options.audioPath )
-    arguments.emplace_back( options.audioPath->string() );
+    arguments.emplace_back( toWxString( *options.audioPath ) );
 
   auto status = runSubprocess( std::move( arguments ) );
 

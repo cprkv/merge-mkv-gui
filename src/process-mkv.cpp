@@ -14,13 +14,13 @@
 
 namespace
 {
-  using PathDiff = std::map<std::string, fs::path>;
+  using PathDiff = std::map<std::u8string, fs::path>;
 
 
   std::optional<PathDiff> diffPath( const std::vector<fs::path>& paths )
   {
-    std::vector<std::string> pathStrings( paths.size() );
-    std::transform( paths.begin(), paths.end(), pathStrings.begin(), []( auto& p ) { return p.string(); } );
+    std::vector<std::u8string> pathStrings( paths.size() );
+    std::transform( paths.begin(), paths.end(), pathStrings.begin(), []( auto& p ) { return p.u8string(); } );
 
     auto commonPrefix = commonPathPrefix( pathStrings );
     auto commonSuffix = commonPathSuffix( pathStrings );
@@ -54,9 +54,9 @@ namespace
     for( const auto& task: tasks )
     {
       wxLogInfo( "mkv combine task: %s + %s + %s",
-                 task.mkvFile.filename().string().c_str(),
-                 task.subFile ? task.subFile->filename().string().c_str() : "<none>",
-                 task.audioFile ? task.audioFile->filename().string().c_str() : "<none>" );
+                 toWxString( task.mkvFile.filename() ),
+                 task.subFile ? toWxString( task.subFile->filename() ) : wxString{ "<none>" },
+                 task.audioFile ? toWxString( task.audioFile->filename() ) : wxString{ "<none>" } );
     }
   }
 
@@ -83,7 +83,7 @@ namespace
 
 std::optional<MkvCombineTasks> makeMkvCombineTasks( ProcessMkvInput input )
 {
-  wxLogInfo( "processMkv: mkv directory: %s", input.mkvsDirectory.string().c_str() );
+  wxLogInfo( "processMkv: mkv directory: %s", toWxString( input.mkvsDirectory ) );
   wxLogInfo( "processMkv: mkv files count: %d", ( int ) input.mkvs.size() );
   wxLogInfo( "processMkv: sub files count: %d", ( int ) input.subs.size() );
   wxLogInfo( "processMkv: audio files count: %d", ( int ) input.audios.size() );

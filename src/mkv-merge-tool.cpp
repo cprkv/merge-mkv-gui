@@ -42,8 +42,14 @@ MkvMergeResult runMkvMergeTool( const RunMkvMergeOptions& options )
       mkvMergePath.string(),
       "-o",
       ( const char* ) toWxString( options.outputPath ),
-      ( const char* ) toWxString( options.mkvPath ),
   };
+
+  if( options.audioPath )
+  {
+    arguments.emplace_back( "-A" );
+  }
+
+  arguments.emplace_back( ( const char* ) toWxString( options.mkvPath ) );
 
   if( options.subtitlePath )
   {
@@ -51,7 +57,9 @@ MkvMergeResult runMkvMergeTool( const RunMkvMergeOptions& options )
   }
 
   if( options.audioPath )
+  {
     arguments.emplace_back( toWxString( *options.audioPath ) );
+  }
 
   auto status = runSubprocess( std::move( arguments ) );
 

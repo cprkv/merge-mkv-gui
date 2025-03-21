@@ -1,6 +1,6 @@
 <repository>
   <feature name="main">
-    <dependency name="wxWidgets" url="git@github.com:cprkv/wxWidgets.git" />
+    <dependency name="wxWidgets" url="https://github.com/cprkv/wxWidgets.git" />
     <dependency name="subprocess" url="https://github.com/sheredom/subprocess.h.git" />
   </feature>
 </repository>

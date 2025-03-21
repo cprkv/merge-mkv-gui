@@ -8,6 +8,7 @@
 - Чтобы собрать:
   - CMake
   - C++ compiler, should support C++20 standard
+  - [dep](https://github.com/cprkv/dep) - используется в качестве менеджера зависимостей
 - Чтобы запустить:
   - MKVToolNix
 

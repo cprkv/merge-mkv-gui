@@ -1,7 +1,13 @@
 project(merge-mkv-gui)
 add_executable(${PROJECT_NAME} WIN32)
 
-file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.hpp *.inl *.rc *.manifest)
+if(MSVC)
+  set(RC_FORMATS *.rc *.manifest)
+else()
+  set(RC_FORMATS)
+endif()
+
+file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.hpp *.inl ${RC_FORMATS})
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES})
 message("target: ${PROJECT_NAME} source files: ${SOURCE_FILES}")
 
@@ -15,4 +21,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   CXX_EXTENSIONS OFF
   LINKER_LANGUAGE CXX
 )
-target_link_options(${PROJECT_NAME} PRIVATE "LINKER:/MANIFEST:NO")
+if (MSVC)
+  target_link_options(${PROJECT_NAME} PRIVATE "LINKER:/MANIFEST:NO")
+endif()

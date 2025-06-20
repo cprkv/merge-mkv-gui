@@ -77,7 +77,7 @@ MainFrame::MainFrame()
     SetSizer( topBox );
 
     SetMinSize( wxSize{ 1400, 800 } );
-    SetBackgroundColour( wxColour{ "#ffffff" } );
+    // SetBackgroundColour( wxColour{ "#ffffff" } );
   }
 
   Connect( wxEVT_MKV_PROCESS_STATUS_UPDATE, wxThreadEventHandler( MainFrame::OnProcessStatusUpdate ) );

@@ -12,8 +12,10 @@ add_subdirectory(src)
 
 
 function(vy_static_link target)
-  set_target_properties(${target} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-  target_link_options(${target} PRIVATE /NODEFAULTLIB:msvcrtd /NODEFAULTLIB:msvcrt)
+  if(MSVC)
+    set_target_properties(${target} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    target_link_options(${target} PRIVATE /NODEFAULTLIB:msvcrtd /NODEFAULTLIB:msvcrt)
+  endif()
 endfunction()
 
 vy_static_link(merge-mkv-gui)

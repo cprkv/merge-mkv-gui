@@ -94,7 +94,7 @@ void FolderInput::onExtensionUpdate( wxCommandEvent& event )
   wxLogInfo( "onExtensionUpdate" );
   if( internalUpdate_.isUpdateInProgress() )
     return;
-  extension_ = fs::path{ event.GetString().fn_str() };
+  extension_ = fs::path{ event.GetString().fn_str().data() };
   updateControl();
 }
 
@@ -104,7 +104,7 @@ void FolderInput::onDirectoryUpdate( wxCommandEvent& event )
   if( internalUpdate_.isUpdateInProgress() )
     return;
   resetDrop();
-  handleDirectory( event.GetString().fn_str() );
+  handleDirectory( event.GetString().fn_str().data() );
 }
 
 void FolderInput::updateControl()

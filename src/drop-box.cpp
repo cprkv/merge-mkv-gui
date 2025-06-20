@@ -4,7 +4,7 @@ namespace
 {
   void handleDrop( IDropHandler* handler, const wxString& string )
   {
-    auto path = fs::path{ string.fn_str() };
+    auto path = fs::path{ string.fn_str().data() };
 
     auto ec     = std::error_code{};
     auto status = fs::status( path, ec );

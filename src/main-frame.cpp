@@ -54,7 +54,7 @@ MainFrame::MainFrame()
 
   // LAYOUT
   {
-    mkvFolderInput   = new FolderInput{ this, "mkv dir:", ".mkv" };
+    mkvFolderInput   = new FolderInput{ this, "mkv dir:", ".mkv", FolderInputFlags::AskExtension };
     subsFolderInput  = new FolderInput{ this, "subs dir:", ".ass", FolderInputFlags::AskExtension };
     audioFolderInput = new FolderInput{ this, "audio dir:", ".mka", FolderInputFlags::AskExtension };
     SetDropTarget( new DropBox{ { mkvFolderInput, subsFolderInput, audioFolderInput } } );
@@ -77,7 +77,9 @@ MainFrame::MainFrame()
     SetSizer( topBox );
 
     SetMinSize( wxSize{ 1400, 800 } );
-    // SetBackgroundColour( wxColour{ "#ffffff" } );
+#ifdef _WIN32
+    SetBackgroundColour( wxColour{ "#ffffff" } );
+#endif
   }
 
   Connect( wxEVT_MKV_PROCESS_STATUS_UPDATE, wxThreadEventHandler( MainFrame::OnProcessStatusUpdate ) );

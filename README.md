@@ -1,6 +1,6 @@
 # Merge MKV GUI
 
-Небольшой GUI поверх MKVToolNix который позволяет легко добавлять в MKV файлы аудио дорожки и субтитры пакетным (batch) образом.
+Небольшой GUI поверх MKVToolNix который позволяет легко добавлять в MKV файлы (и не только!) аудио дорожки и субтитры пакетным (batch) образом.
 Приложение преднозначено для Windows. Для macOS и Linux требует небольших изменений.
 
 ![example](docs/example.png)
@@ -11,6 +11,7 @@
   - CMake
   - C++ compiler, should support C++20 standard
   - [dep](https://github.com/cprkv/dep) - используется в качестве менеджера зависимостей
+  - `cd deps/wxWidgets; git submodule update --init --recursive`
 - Чтобы запустить:
   - MKVToolNix
 
